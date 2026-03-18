@@ -38,11 +38,11 @@
       ansible.builtin.debug:
         var: init_result.stderr_lines
 
-    - name: Copy admin.conf
-      become: true
-      ansible.builtin.copy:
-        src: /etc/kubernetes/admin.conf
-        dest: '{{ ansible_facts["env"]["HOME"] }}/.kube/config'
-        mode: "0644"
-        owner: "{{ ansible_facts['env']['USER'] }}"
-        group: "{{ ansible_facts['env']['USER'] }}"
+- name: Copy admin.conf
+  become: true
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: '{{ ansible_facts["env"]["HOME"] }}/.kube/config'
+    mode: "0644"
+    owner: "{{ ansible_facts['env']['USER'] }}"
+    group: "{{ ansible_facts['env']['USER'] }}"
