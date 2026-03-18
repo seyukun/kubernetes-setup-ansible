@@ -1,0 +1,22 @@
+- name: Generate requirements.yml
+  block:
+    - name: Execute ansible-galaxy collection list
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection list --format json
+      changed_when: false
+      register: freeze_collection_list
+
+    - name: Output requirements.yml
+      ansible.builtin.copy:
+        content: |-
+          ---
+          collections:
+          {% for c in (item.value | dict2items) %}
+            - name: {{ c.key }}
+              version: {{ c.value.version }}
+          {% endfor %}
+        dest: requirements.yml
+        mode: "0644"
+      loop: "{{ freeze_collection_list.stdout | from_json | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"

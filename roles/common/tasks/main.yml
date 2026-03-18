@@ -1,0 +1,70 @@
+## Apt
+- name: Update packages
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Upgrade packages
+  become: true
+  ansible.builtin.apt:
+    upgrade: true
+
+- name: Install packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+      - gnupg
+      - lsb-release
+    state: present
+
+## Swap
+
+- name: Swap status
+  ansible.builtin.command: |
+    swapon --show --noheadings
+  changed_when: false
+  register: common_swap_status
+
+- name: Swap off
+  become: true
+  ansible.builtin.command: |
+    swapoff -a
+  changed_when: true
+  when: common_swap_status.stdout | trim != ""
+
+- name: Fstab swap off
+  become: true
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^(?!#).*\bswap\b.*\n?'
+    replace: ''
+    backup: true
+  when: common_swap_status.stdout | trim != ""
+
+## Kernel
+
+- name: Load kernel modules
+  become: true
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  loop:
+    - overlay
+    - br_netfilter
+
+- name: Patch kernel parameters
+  become: true
+  ansible.posix.sysctl:
+    name: "{{ item[0] }}"
+    value: "{{ item[1] }}"
+    sysctl_file: /etc/sysctl.d/k8s.conf
+    reload: true
+    state: present
+  loop: "{{ common_sysctl_params.items() }}"
+  loop_control:
+    label: "{{ item[0] }}"

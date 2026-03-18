@@ -1,0 +1,19 @@
+- name: Kubernetes cluster common
+  hosts: kubernetes
+  gather_facts: true
+  roles:
+    - common
+    - containerd
+    - kube
+
+- name: Kubernetes cluster master
+  tags: init_master
+  hosts: master
+  roles:
+    - init
+
+- name: Freeze Ansible collection
+  hosts: local
+  gather_facts: true
+  roles:
+    - freeze
