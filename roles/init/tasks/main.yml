@@ -41,6 +41,7 @@
 - name: Copy admin.conf
   become: true
   ansible.builtin.copy:
+    remote_src: true
     src: /etc/kubernetes/admin.conf
     dest: '{{ ansible_facts["env"]["HOME"] }}/.kube/config'
     mode: "0644"
